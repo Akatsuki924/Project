@@ -1,0 +1,18 @@
+# CS61CPU
+
+Look ma, I made a CPU! Here's what I did:
+
+* 这个project用一个叫logisim-evolution的java软件手动搭一个可以运行RISC-V 指令的CPU结构，前辈用了“手撕CPU”了描述这个project，我觉得十分之贴切，总共分为五个任务：
+* Task1：搭建CPU中的ALU结构，我觉得比较有难度的应该mulh、mul、mulhu，mul需要区分正负，而mulhu是算超位溢出，需要在草稿纸上演算一下，把32位分割为两个16位，注意进位的可能性，mulh是建立在mulhu的基础上做出来的；除此以外，sll、srl、sra这几个可以参考lab5的ex5，移动的思路是一致的
+* Task2：搭建CPU中的RegFile结构，read用MUXer就能简单地解决，而write需要用regfile部件借助clock控制写入，注意每个regfile 的writeEn信号的获取需要借助DMUXer，当时没搞懂这个部件的使用方法，鼓捣了好久，简单说明就是一个input多个output，除了选择的通路出口外，其他出口均为默认值0
+* Task3：搭建一个可以满足addi instruction运行的CPU结构，刚开始先用single-path，成功了再改成2个stage的pipelined CPU，IF算一个stage，ID以及以后的部分算为第二个stage，这个比较简单，完成这个只要用到imm_gen、Regfile、ALU三个部件就能够完成了。
+* Task4: 这个project的主体部分，搭建CPU使它满足大概四十个指令的运行，主要的工作量在于control_logic信号的产生以及cpu面板各部件之间的连接，可以参考discussion8中那张图，简化成2 pipelined stage即可。容易出错的主要是一下几个方面：
+  * 注意lw lb lh之间的差别，读取数据长度不同的，而CPU里面的DMEM结构默认是读取一个word，你需要用spliter进行分割
+  * PC和instruction进入excute stage后都要用register储存下来
+  * control logic中对instrution先用spliter分割，用comparater判断类型，得到0/1信号然后借助Bit Extender以及or和and逻辑门电路转化成相应的ALUSel、ImmSel、WBSel等信号对没有学过逻辑电路的人我觉得是个难点，我当时想不出来然后借鉴了别人的画法看懂的，明白了这个套路就画起来得心应手了
+  * 由于是pipedpined stage，对于branch和juimp类型的instruction需要利用PCSel对进入错误的instruction进行kill
+* Task5：自己写.s的测试文件，然后利用project自带的creater.py生成正确的输出和相应的machine code，和自己搭建的CPU运行结果进行比对，测试文件尽量覆盖所有的regfie以及instruction，这里可以借鉴前辈写的测试文件
+* 测试Debug小技巧：project给的.cric文件有明显的父子级关联关系，打开一个父类的文件同时会加载子类文件，其中最高等级的应该是run.circ，所以debug的时候应该打开这个文件，打开machine code文件去掉十六进制的前缀后可以直接复制到IMEM中然后进行调试即可，但是注意在修改的时候必须单独打开子文件修改，我觉得调试的过程就是理解CPU运行逻辑的过程，非常的直观
+* 其他的注意事项：我在写这个项目的时候windows中途出现了蓝屏然后重启以后.circ文件打不开了，导致这个project做到一半的时候我戴着痛苦面具又重新做了一遍，我强烈建议用github尽量每完成一个部分git commit一下，不然真的很伤，哭哭
+
+
